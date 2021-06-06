@@ -74,6 +74,12 @@ void setPixel(int pixelNumber, RgbColor color) {
   strip.SetPixelColor(pixelNumber, limitedColor);
 }
 
+void setAllPixels(RgbColor color) {
+  for(int i = 0; i<PIXEL_COUNT; i++) {
+    setPixel(i, color);
+  }
+}
+
 void setRandomSeed() {
   uint32_t seed;
 
@@ -181,11 +187,14 @@ void loop() {
 
   if (previousEffectTime != currentTime) {
     previousEffectTime = currentTime;
-    if (random(5) == 0) {
+    if (random(50) == 0) {
       int effectChoice = random(1);
       executeEffect(effectChoice);
     }
   }
+
+  // Follow blynk color
+  setAllPixels(RgbColor(red, green, blue));
 
   // Show Blynk status
   if (!Blynk.connected()) {
@@ -193,10 +202,6 @@ void loop() {
   } else {
     setPixel(1, RgbColor(0, 50, 0));
   }
-  strip.Show();
-
-  // Follow blynk color
-  setPixel(2, RgbColor(red, green, blue));
   strip.Show();
 
   ArduinoOTA.handle();
