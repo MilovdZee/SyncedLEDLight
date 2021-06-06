@@ -198,9 +198,9 @@ void loop() {
 
   // Show Blynk status
   if (!Blynk.connected()) {
-    setPixel(1, RgbColor(50, 0, 0));
+    setPixel(1, RgbColor(brightness, 0, 0));
   } else {
-    setPixel(1, RgbColor(0, 50, 0));
+    setPixel(1, RgbColor(0, brightness, 0));
   }
   strip.Show();
 
