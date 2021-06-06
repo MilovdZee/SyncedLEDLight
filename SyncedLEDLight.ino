@@ -5,6 +5,7 @@
 #include <EEPROM.h>
 #include <TZ.h>
 #include <coredecls.h> // required for settimeofday_cb() (NTP sync callback)
+#include <BlynkSimpleEsp8266.h>
 
 #include "defines.h"
 
@@ -20,6 +21,15 @@ int millisOffset = 0; // Offset compared to millis() to get partial seconds in s
 
 char ssid[60];
 char wifiPassword[60];
+
+char blynkServer[60];
+int blynkPort = 9905;
+char blynkAuth[60];
+
+// Global color from blynk
+int red = 0;
+int green = 0;
+int blue = 0;
 
 // Number of rings
 #define RINGS 9
@@ -45,13 +55,15 @@ void clearStrip() {
 }
 
 void handlingDelay(int delayMillis) {
-  ArduinoOTA.handle();
-  server.handleClient();
+  for (int i = 0; i < delayMillis; i += 10) {
+    delay(10);
+    ArduinoOTA.handle();
+    server.handleClient();
+    Blynk.run();
 
-  // Make sure the software watchdog does not trigger
-  ESP.wdtFeed();
-
-  if (delayMillis > 0) delay(delayMillis);
+    // Make sure the software watchdog does not trigger
+    ESP.wdtFeed();
+  }
 }
 
 void setPixel(int pixelNumber, RgbColor color) {
@@ -115,6 +127,10 @@ void setup() {
   Serial.println(WiFi.localIP());
   delay(1000);
 
+  // Setup Blynk
+  EEPROM.get(BLYNK_SERVER_ADDR, blynkServer);
+  EEPROM.get(BLYNK_AUTH_ADDR, blynkAuth);
+
   // implement NTP update of timekeeping (with automatic hourly updates)
   configTime(MY_TZ, NTP_SERVERS);
 
@@ -128,8 +144,11 @@ void setup() {
   // Setup the web server
   httpUpdater.setup(&server);
   server.on("/", handleRoot);
-  server.on("/wifi", handleWifi);
+  server.on("/settings", handleSettings);
   server.begin();
+
+  // Setup Blynk
+  Blynk.config(blynkAuth, blynkServer, blynkPort);
 
   clearStrip();
 
@@ -147,7 +166,16 @@ void executeEffect(int choice) {
   }
 }
 
-int count = 0;
+BLYNK_WRITE(V0) {
+  red = param.asInt();
+}
+BLYNK_WRITE(V1) {
+  green = param.asInt();
+}
+BLYNK_WRITE(V2) {
+  blue = param.asInt();
+}
+
 void loop() {
   currentTime = time(nullptr); // time_t = seconds since epoch
 
@@ -159,6 +187,19 @@ void loop() {
     }
   }
 
+  // Show Blynk status
+  if (!Blynk.connected()) {
+    setPixel(1, RgbColor(50, 0, 0));
+  } else {
+    setPixel(1, RgbColor(0, 50, 0));
+  }
+  strip.Show();
+
+  // Follow blynk color
+  setPixel(2, RgbColor(red, green, blue));
+  strip.Show();
+
   ArduinoOTA.handle();
   server.handleClient();
+  Blynk.run();  
 }

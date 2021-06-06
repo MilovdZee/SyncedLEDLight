@@ -4,8 +4,10 @@
 #define PIXEL_COUNT 80 // make sure to set this to the number of pixels in your strip
 
 #define SSID_ADDR 0 // String[60]
-#define WIFI_PASSWORD_ADDR (SSID_ADDR + sizeof(ssid)) // String[60]
+#define WIFI_PASSWORD_ADDR (SSID_ADDR + sizeof(ssid)) // char[60]
 #define BRIGHTNESS_ADDR (WIFI_PASSWORD_ADDR + sizeof(wifiPassword)) // int
+#define BLYNK_SERVER_ADDR (BRIGHTNESS_ADDR + sizeof(brightness)) // char[60]
+#define BLYNK_AUTH_ADDR (BLYNK_SERVER_ADDR + sizeof(blynkServer)) // char[60]
 
 // Limit the power consumption. A full lit display can take up to 4 Amps.
 // A value of 255 disabled the limit and allows all LEDs to be full brightness.
@@ -22,7 +24,7 @@
     background: #fad7a0;\
     color: #154360;\
     padding: 20px;\
-    font-size: 3em;\
+    font-size: 2em;\
     text-align: center;\
   }\
   div.container {\
@@ -37,6 +39,7 @@
   }\
   h1 {\
     margin-top: 0;\
+    margin-bottom: .1em;\
   }\
   input {\
     width: 100%;\

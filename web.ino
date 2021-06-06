@@ -28,7 +28,7 @@ void handleRoot() {
         <input type=\"range\" name=\"brightness\" min=\"2\" max=\"255\" value=\"" + String(brightness) + "\"></br></br>\
         <input type=\"submit\" value=\"Submit\">\
       </form>\
-      <div><a href=\"/wifi\">wifi</a></div>\
+      <div><a href=\"/settings\">settings</a></div>\
     </div>\
   </body>\
 </html>";
@@ -36,7 +36,7 @@ void handleRoot() {
   server.send(200, "text/html", settingsForm);
 }
 
-void handleWifi() {
+void handleSettings() {
   if (server.method() == HTTP_POST) {
     for (uint16_t pixel = 0; pixel < PIXEL_COUNT; pixel++) {
       strip.SetPixelColor(pixel, RgbColor(50, 50, 0));
@@ -46,10 +46,14 @@ void handleWifi() {
 
     snprintf(ssid, sizeof(ssid), server.arg("ssid").c_str());
     snprintf(wifiPassword, sizeof(wifiPassword), server.arg("password").c_str());
+    snprintf(blynkServer, sizeof(blynkServer), server.arg("blynkServer").c_str());
+    snprintf(blynkAuth, sizeof(blynkAuth), server.arg("blynkAuth").c_str());
 
     // Store values in EEProm
     EEPROM.put(SSID_ADDR, ssid);
-    if (String(wifiPassword).length() > 0) EEPROM.put(WIFI_PASSWORD_ADDR, wifiPassword);
+    EEPROM.put(WIFI_PASSWORD_ADDR, wifiPassword);
+    EEPROM.put(BLYNK_SERVER_ADDR, blynkServer);
+    EEPROM.put(BLYNK_AUTH_ADDR, blynkAuth);
     EEPROM.commit();
 
     clearStrip();
@@ -62,12 +66,20 @@ void handleWifi() {
   String settingsForm = String(CSS) + "<html>\
   <body>\
     <div class=\"container\">\
-    <h1>WiFi Settings</h1>\
-      <form method=\"POST\" action=\"/wifi\">\
-        SSID:</br>\
+    <h1>Settings</h1>\
+      <form method=\"POST\" action=\"/settings\">\
+        WIFI SSID:</br>\
         <input type=\"text\" name=\"ssid\" value=\"" + String(ssid) + "\"></br></br>\
-        Password:</br>\
-        <input type=\"text\" name=\"password\" value=\"" + String(wifiPassword) + "\">\
+        \
+        WIFI Password:</br>\
+        <input type=\"text\" name=\"password\" value=\"" + String(wifiPassword) + "\"></br></br>\
+        \
+        Blynk server:</br>\
+        <input type=\"text\" name=\"blynkServer\" value=\"" + String(blynkServer) + "\"></br></br>\
+        \
+        Blynk auth:</br>\
+        <input type=\"text\" name=\"blynkAuth\" value=\"" + String(blynkAuth) + "\">\
+        \
         <input type=\"submit\" value=\"Submit\">\
       </form>\
     </div>\
